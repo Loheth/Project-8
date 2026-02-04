@@ -6,7 +6,9 @@
 
 body {
   font-family: "silkscreenbold";
-  background: url("./Assets/Sprites/super-bomberman-r-bg-black.png") no-repeat center;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url("./Assets/Sprites/super-bomberman-r-bg-black.jpg") no-repeat center;
   background-color: black;
   background-size: cover;
   color: white;

@@ -8,7 +8,7 @@ window.onload = () => {
         for (let i = 0; i < mapMenu[0].length; i += 1) {
             context.drawImage(solidBlock, 50 * i, 0, 50, 50)
         }
-        context.drawImage(superBomberman, 100, -50, 500, 500)
+        context.drawImage(superBomberman, (canvas.width - 500) / 2, canvas.height / 1.55 - 370, 500, 500)
         context.font = "26px silkscreenbold";
         context.fillStyle = 'white';
         context.fillText('Press enter', canvas.width / 2 - 105, canvas.height / 1.55);

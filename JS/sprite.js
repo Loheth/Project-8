@@ -2,7 +2,7 @@ let superBomberman = new Image()
 superBomberman.onload = new function () {
     superBomberman.ImageReady = true;
 }
-superBomberman.src = './Assets/Sprites/super-bomberman.png'
+superBomberman.src = './Assets/Sprites/super-bomberman.png?v=' + Date.now()
 
 let bomberman = new Image()
 bomberman.onLoad = new function () {
