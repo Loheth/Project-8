@@ -537,13 +537,18 @@ window.onload = () => {
             });
         }
         
-        // Instructions
+        // Instructions - centered below leaderboard
         context.font = "22px silkscreenbold";
         context.fillStyle = '#00ffff';
         context.strokeStyle = '#000000';
         context.lineWidth = 2;
-        context.strokeText(`PRESS ENTER TO PLAY AGAIN`, 120, canvas.height - 50);
-        context.fillText(`PRESS ENTER TO PLAY AGAIN`, 120, canvas.height - 50);
+        const instructionText = `PRESS ENTER TO PLAY AGAIN`;
+        const textWidth = context.measureText(instructionText).width;
+        const instructionX = (canvas.width - textWidth) / 2;
+        // Position below leaderboard entries (last entry at ~300, add spacing)
+        const instructionY = topScores.length > 0 ? 160 + topScores.length * 35 + 60 : canvas.height / 2 + 100;
+        context.strokeText(instructionText, instructionX, instructionY);
+        context.fillText(instructionText, instructionX, instructionY);
     };
 
     const gameOver = (player) => {
