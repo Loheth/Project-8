@@ -80,7 +80,7 @@ let whiteHead = new Image()
 whiteHead.onload = new function () {
     whiteHead.ImageReady = true;
 }
-whiteHead.src = './Assets/Sprites/white-head.png'
+whiteHead.src = './Assets/Sprites/white-head.png?v=' + Date.now()
 
 let blackHead = new Image()
 blackHead.onload = new function () {

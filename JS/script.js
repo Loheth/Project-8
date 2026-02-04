@@ -90,7 +90,7 @@ window.onload = () => {
         context.drawImage(cleanStatusBar, 50, 0, 650, 50)
         context.drawImage(solidBlock, 0, 0, 50, 50)
         context.drawImage(solidBlock, 700, 0, 50, 50)
-        context.drawImage(whiteHead, 65, 10, 30, 30)
+        context.drawImage(whiteHead, 60, 0, 50, 50)
         context.fillStyle = this.color;
         context.drawImage(heart, 103, 13, 25, 25)
         context.fillText(`${newPlayer.health}`, 135, 33);
