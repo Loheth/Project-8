@@ -1,7 +1,6 @@
 window.onload = () => {
 
     let start = false;
-    let players = 1;
     context = canvas.getContext("2d");
 
     const menu = () => {
@@ -13,14 +12,7 @@ window.onload = () => {
         context.font = "26px silkscreenbold";
         context.fillStyle = 'white';
         context.fillText('Press enter', canvas.width / 2 - 105, canvas.height / 1.55);
-        context.fillText('single player', canvas.width / 2 - 120, canvas.height / 1.35);
-        context.fillText('MULTI PLAYER', canvas.width / 2 - 110, canvas.height / 1.25);
-        if (players === 1) {
-            context.fillText('>', canvas.width / 2 - 145, canvas.height / 1.35);
-        }
-        if (players === 2) {
-            context.fillText('>', canvas.width / 2 - 135, canvas.height / 1.25);
-        }
+        context.fillText('to start', canvas.width / 2 - 90, canvas.height / 1.35);
         requestId2 = window.requestAnimationFrame(menu);
     }
 
@@ -109,27 +101,12 @@ window.onload = () => {
         context.fillText(`${newPlayer.speed - 1}`, 275, 40);
         context.drawImage(items, 18, 0, 16, 16, 300, 10, 30, 30)
         context.fillText(`${newPlayer.bombs}`, 320, 40);
-        if (newPlayer2) {
-            context.drawImage(heart, 545, 13, 25, 25)
-            context.drawImage(blackHead, 650, 10, 30, 30);
-            context.font = "26px silkscreenbold";
-            context.fillText(`${newPlayer2.health}`, 578, 33);
-            context.font = "16px silkscreenbold";
-            context.drawImage(items, 0, 0, 16, 16, 410, 10, 30, 30)
-            context.fillText(`${newPlayer2.bombPower}`, 430, 40);
-            context.drawImage(items, 34, 0, 16, 16, 455, 10, 30, 30)
-            context.fillText(`${newPlayer2.speed - 1}`, 470, 40);
-            context.drawImage(items, 18, 0, 16, 16, 500, 10, 30, 30)
-            context.fillText(`${newPlayer2.bombs}`, 520, 40);
-        }
-        if (!newPlayer2) {
-            context.drawImage(enemy, 0, 0, 22, 36, 655, -2, 22 * 1.3, 36 * 1.3)
-            context.font = "26px silkscreenbold";
-            if (newPlayer.enemiesKilled < 10) {
-                context.fillText(`0${newPlayer.enemiesKilled}`, 608, 32);
-            } else {
-                context.fillText(`${newPlayer.enemiesKilled}`, 608, 32);
-            }
+        context.drawImage(enemy, 0, 0, 22, 36, 655, -2, 22 * 1.3, 36 * 1.3)
+        context.font = "26px silkscreenbold";
+        if (newPlayer.enemiesKilled < 10) {
+            context.fillText(`0${newPlayer.enemiesKilled}`, 608, 32);
+        } else {
+            context.fillText(`${newPlayer.enemiesKilled}`, 608, 32);
         }
         context.font = "26px silkscreenbold";
     }
@@ -143,15 +120,9 @@ window.onload = () => {
                 context.drawImage(solidBlock, 50 * i, 0, 50, 50)
             }
             renderMap(mapMenu);
-            if (players === 2) {
-                context.fillText(`GAME OVER, ${player.name} WON!`, 130, canvas.height / 2 - 20);
-                context.fillText(`PRESS ENTER TO PLAY AGAIN`, 120, 320);
-            }
-            if (players === 1) {
-                context.fillText(`GAME OVER!`, 280, canvas.height / 2 - 50);
-                context.fillText(`YOUR FINAL SCORE IS ${newPlayer.enemiesKilled}`, 155, canvas.height / 2);
-                context.fillText(`PRESS ENTER TO PLAY AGAIN`, 120, 350);
-            }
+            context.fillText(`GAME OVER!`, 280, canvas.height / 2 - 50);
+            context.fillText(`YOUR FINAL SCORE IS ${newPlayer.enemiesKilled}`, 155, canvas.height / 2);
+            context.fillText(`PRESS ENTER TO PLAY AGAIN`, 120, 350);
         }, 500);
     }
 
@@ -493,11 +464,6 @@ window.onload = () => {
         newPlayer.newPos();
         newPlayer.update();
         newPlayer.checkDamage();
-        if (newPlayer2) {
-            newPlayer2.newPos();
-            newPlayer2.update();
-            newPlayer2.checkDamage();
-        }
         if (frames % 150 === 0) {
             if (randMap[randy][randx] !== 0) {
                 randx = Math.floor(Math.random() * map1[0].length);
@@ -512,11 +478,6 @@ window.onload = () => {
             enemy.randomMove()
             if (enemy.gridX === newPlayer.gridX && enemy.gridY === newPlayer.gridY) {
                 newPlayer.checkDamage(1);
-            }
-            if (newPlayer2) {
-                if (enemy.gridX === newPlayer2.gridX && enemy.gridY === newPlayer2.gridY) {
-                    newPlayer2.checkDamage(1);
-                }
             }
             if (enemy.checkEnemyDied()) {
                 enemies.splice(i, 1);
@@ -567,62 +528,10 @@ window.onload = () => {
                 newPlayer.down = true;
                 break;
         }
-        switch (e.keyCode) {
-            case 81:
-                if (newPlayer2.bombs > 0) {
-                    newPlayer2.bombs -= 1;
-                    newPlayer2.placeBomb();
-                    setTimeout(() => {
-                        newPlayer2.bombs += 1;
-                    }, 2300);
-                }
-                break;
-            case 65:
-                newPlayer2.speedX = newPlayer2.speed * -1;
-                newPlayer2.left = true;
-                newPlayer2.right = false;
-                newPlayer2.up = false;
-                newPlayer2.down = false;
-                break;
-            case 87:
-                newPlayer2.speedY = newPlayer2.speed * -1;
-                newPlayer2.left = false;
-                newPlayer2.right = false;
-                newPlayer2.up = true;
-                newPlayer2.down = false;
-                break;
-            case 68:
-                newPlayer2.speedX = newPlayer2.speed;
-                newPlayer2.left = false;
-                newPlayer2.right = true;
-                newPlayer2.up = false;
-                newPlayer2.down = false;
-                break;
-            case 83:
-                newPlayer2.speedY = newPlayer2.speed;
-                newPlayer2.left = false;
-                newPlayer2.right = false;
-                newPlayer2.up = false;
-                newPlayer2.down = true;
-                break;
-        }
         if (!start) {
             if (e.keyCode === 13) {
-                if (players === 1) {
-                    newPlayer2 = 0;
-                    start = true;
-                    startGame();
-                }
-                if (players === 2) {
-                    start = true;
-                    startGame();
-                }
-            }
-            if (e.keyCode === 38) {
-                players = 1;
-            }
-            if (e.keyCode === 40) {
-                players = 2;
+                start = true;
+                startGame();
             }
         } else {
             if (e.keyCode === 13) {
@@ -650,28 +559,9 @@ window.onload = () => {
                 newPlayer.down = false;
                 break;
         }
-        switch (e.keyCode) {
-            case 65:
-                newPlayer2.speedX = 0;
-                newPlayer2.left = false;
-                break;
-            case 87:
-                newPlayer2.speedY = 0;
-                newPlayer2.up = false;
-                break;
-            case 68:
-                newPlayer2.speedX = 0;
-                newPlayer2.right = false;
-                break;
-            case 83:
-                newPlayer2.speedY = 0;
-                newPlayer2.down = false;
-                break;
-        }
     }
 
-    let newPlayer = new Player(60, 60, 'white', 135, 100, 'Player 2', bomberman);
-    let newPlayer2 = new Player(660, 460, 'white', 550, 100, 'Player 1', bomberman2);
+    let newPlayer = new Player(60, 60, 'white', 135, 100, 'Player 1', bomberman);
     let enemies = [];
 
     menu();
