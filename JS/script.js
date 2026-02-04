@@ -6,11 +6,11 @@ window.onload = () => {
     const menu = () => {
         renderMap(mapMenu)
         for (let i = 0; i < mapMenu[0].length; i += 1) {
-            context.drawImage(solidBlock, 50 * i, 0, 50, 50)
+            drawCyberSolidBlock(50 * i, 0, 50, 50)
         }
         context.drawImage(superBomberman, (canvas.width - 500) / 2, canvas.height / 1.55 - 370, 500, 500)
         context.font = "26px silkscreenbold";
-        context.fillStyle = 'white';
+        context.fillStyle = '#00ffaa';
         context.fillText('Press enter', canvas.width / 2 - 105, canvas.height / 1.55);
         context.fillText('to start', canvas.width / 2 - 90, canvas.height / 1.35);
         requestId2 = window.requestAnimationFrame(menu);
@@ -51,16 +51,190 @@ window.onload = () => {
         return map;
     }
 
+    // Cybersecurity-themed drawing functions
+    const drawCyberBackground = (x, y, width, height) => {
+        // Dark background with subtle grid
+        context.fillStyle = '#0a0a0f';
+        context.fillRect(x, y, width, height);
+        
+        // Subtle grid lines in cyan/green
+        context.strokeStyle = '#00ffaa';
+        context.lineWidth = 0.5;
+        context.globalAlpha = 0.2;
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x + width, y);
+        context.moveTo(x, y);
+        context.lineTo(x, y + height);
+        context.stroke();
+        
+        // Random binary code effect
+        if (Math.random() > 0.95) {
+            context.fillStyle = '#00ff88';
+            context.globalAlpha = 0.3;
+            context.font = '8px monospace';
+            const binary = Math.random() > 0.5 ? '1' : '0';
+            context.fillText(binary, x + 5, y + 15);
+        }
+        context.globalAlpha = 1;
+    };
+
+    const drawCyberWall = (x, y, width, height) => {
+        // Server rack / firewall appearance
+        const gradient = context.createLinearGradient(x, y, x + width, y + height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(0.5, '#16213e');
+        gradient.addColorStop(1, '#0f3460');
+        context.fillStyle = gradient;
+        context.fillRect(x, y, width, height);
+        
+        // Border in cyan
+        context.strokeStyle = '#00ffaa';
+        context.lineWidth = 2;
+        context.strokeRect(x + 1, y + 1, width - 2, height - 2);
+        
+        // Server rack slots
+        context.fillStyle = '#00ff88';
+        context.globalAlpha = 0.6;
+        for (let i = 0; i < 3; i++) {
+            context.fillRect(x + 8, y + 8 + i * 12, width - 16, 4);
+        }
+        
+        // LED indicators
+        context.fillStyle = '#ff0088';
+        context.fillRect(x + width - 12, y + 8, 4, 4);
+        context.fillStyle = '#00ff88';
+        context.fillRect(x + width - 12, y + 16, 4, 4);
+        
+        context.globalAlpha = 1;
+    };
+
+    const drawCyberSolidBlock = (x, y, width, height) => {
+        // Encrypted security barrier
+        const gradient = context.createLinearGradient(x, y, x + width, y + height);
+        gradient.addColorStop(0, '#1a0033');
+        gradient.addColorStop(0.5, '#330066');
+        gradient.addColorStop(1, '#1a0033');
+        context.fillStyle = gradient;
+        context.fillRect(x, y, width, height);
+        
+        // Hexagonal pattern border
+        context.strokeStyle = '#ff00ff';
+        context.lineWidth = 2;
+        context.strokeRect(x + 2, y + 2, width - 4, height - 4);
+        
+        // Encryption symbols / lock pattern
+        context.fillStyle = '#ff00ff';
+        context.globalAlpha = 0.7;
+        // Draw a lock-like pattern
+        context.fillRect(x + width/2 - 4, y + 8, 8, 6);
+        context.beginPath();
+        context.arc(x + width/2, y + 14, 6, 0, Math.PI);
+        context.stroke();
+        
+        // Binary code overlay
+        context.fillStyle = '#00ffff';
+        context.globalAlpha = 0.4;
+        context.font = '6px monospace';
+        context.fillText('1011', x + 4, y + height - 4);
+        context.fillText('0101', x + width - 20, y + height - 4);
+        
+        context.globalAlpha = 1;
+    };
+
+    const drawVirusEnemy = (x, y, width, height, frame = 0) => {
+        const centerX = x + width / 2;
+        const centerY = y + height / 2;
+        const radius = Math.min(width, height) / 2 - 2;
+        
+        // Pulsing effect based on frame
+        const pulse = 1 + Math.sin(frame * 0.2) * 0.1;
+        const currentRadius = radius * pulse;
+        
+        // Outer glow (infected aura)
+        const gradient = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, currentRadius * 1.5);
+        gradient.addColorStop(0, 'rgba(255, 0, 136, 0.6)');
+        gradient.addColorStop(0.5, 'rgba(255, 0, 136, 0.3)');
+        gradient.addColorStop(1, 'rgba(255, 0, 136, 0)');
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(centerX, centerY, currentRadius * 1.5, 0, Math.PI * 2);
+        context.fill();
+        
+        // Main virus body (spiky circle)
+        const bodyGradient = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, currentRadius);
+        bodyGradient.addColorStop(0, '#ff0088');
+        bodyGradient.addColorStop(0.5, '#cc0066');
+        bodyGradient.addColorStop(1, '#990044');
+        context.fillStyle = bodyGradient;
+        
+        // Draw spiky virus shape
+        context.beginPath();
+        const spikes = 8;
+        for (let i = 0; i < spikes * 2; i++) {
+            const angle = (i * Math.PI) / spikes;
+            const r = i % 2 === 0 ? currentRadius : currentRadius * 0.7;
+            const px = centerX + Math.cos(angle) * r;
+            const py = centerY + Math.sin(angle) * r;
+            if (i === 0) {
+                context.moveTo(px, py);
+            } else {
+                context.lineTo(px, py);
+            }
+        }
+        context.closePath();
+        context.fill();
+        
+        // Border/outline
+        context.strokeStyle = '#ff00aa';
+        context.lineWidth = 2;
+        context.stroke();
+        
+        // Infection particles around virus
+        context.fillStyle = '#ff0088';
+        context.globalAlpha = 0.7;
+        for (let i = 0; i < 6; i++) {
+            const particleAngle = (i * Math.PI * 2) / 6 + frame * 0.1;
+            const particleDist = currentRadius * 1.2;
+            const px = centerX + Math.cos(particleAngle) * particleDist;
+            const py = centerY + Math.sin(particleAngle) * particleDist;
+            context.beginPath();
+            context.arc(px, py, 2, 0, Math.PI * 2);
+            context.fill();
+        }
+        
+        // Core (infected center)
+        context.fillStyle = '#ffffff';
+        context.globalAlpha = 0.9;
+        context.beginPath();
+        context.arc(centerX, centerY, currentRadius * 0.3, 0, Math.PI * 2);
+        context.fill();
+        
+        // Red cross/X mark (infection symbol)
+        context.strokeStyle = '#ff0000';
+        context.lineWidth = 2;
+        context.globalAlpha = 1;
+        const crossSize = currentRadius * 0.4;
+        context.beginPath();
+        context.moveTo(centerX - crossSize, centerY - crossSize);
+        context.lineTo(centerX + crossSize, centerY + crossSize);
+        context.moveTo(centerX + crossSize, centerY - crossSize);
+        context.lineTo(centerX - crossSize, centerY + crossSize);
+        context.stroke();
+        
+        context.globalAlpha = 1;
+    };
+
     const renderMap = (map) => {
         for (let j = 0; j < map.length; j += 1) {
             for (let i = 0; i < map[0].length; i += 1) {
-                context.drawImage(field, i * gridWidth, j * gridHeigth + offset, 50, 50)
+                drawCyberBackground(i * gridWidth, j * gridHeigth + offset, 50, 50)
                 switch (map[j][i]) {
                         case 1:
-                        context.drawImage(solidBlock, i * gridWidth, j * gridHeigth + offset, 50, 50)
+                        drawCyberSolidBlock(i * gridWidth, j * gridHeigth + offset, 50, 50)
                         break;
                     case 2:
-                        context.drawImage(wall, i * gridWidth, j * gridHeigth + offset, 50, 50)
+                        drawCyberWall(i * gridWidth, j * gridHeigth + offset, 50, 50)
                         break;
                         case 3:
                         context.drawImage(bomb, 0, 0, 19, 20, i * gridWidth, j * gridHeigth + offset, 50, 50)
@@ -87,13 +261,34 @@ window.onload = () => {
     }
 
     const statusBar = () => {
-        context.drawImage(cleanStatusBar, 50, 0, 650, 50)
-        context.drawImage(solidBlock, 0, 0, 50, 50)
-        context.drawImage(solidBlock, 700, 0, 50, 50)
+        // Draw cybersecurity-themed status bar background
+        const gradient = context.createLinearGradient(50, 0, 700, 0);
+        gradient.addColorStop(0, '#0a0a0f');
+        gradient.addColorStop(0.5, '#1a1a2e');
+        gradient.addColorStop(1, '#0a0a0f');
+        context.fillStyle = gradient;
+        context.fillRect(50, 0, 650, 50);
+        
+        // Border
+        context.strokeStyle = '#00ffaa';
+        context.lineWidth = 2;
+        context.strokeRect(50, 0, 650, 50);
+        
+        // Corner blocks
+        drawCyberSolidBlock(0, 0, 50, 50)
+        drawCyberSolidBlock(700, 0, 50, 50)
+        
         context.drawImage(whiteHead, 60, 0, 50, 50)
-        context.fillStyle = this.color;
+        context.fillStyle = '#00ffaa';
         context.drawImage(heart, 103, 13, 25, 25)
+        // Make health text larger and more visible
+        context.font = "24px silkscreenbold";
+        context.fillStyle = '#ffffff';
+        context.strokeStyle = '#00ffaa';
+        context.lineWidth = 2;
+        context.strokeText(`${newPlayer.health}`, 135, 33);
         context.fillText(`${newPlayer.health}`, 135, 33);
+        context.fillStyle = '#00ffaa';
         context.drawImage(items, 0, 0, 16, 16, 210, 10, 30, 30)
         context.font = "16px silkscreenbold";
         context.fillText(`${newPlayer.bombPower}`, 230, 40);
@@ -101,7 +296,8 @@ window.onload = () => {
         context.fillText(`${newPlayer.speed - 1}`, 275, 40);
         context.drawImage(items, 18, 0, 16, 16, 300, 10, 30, 30)
         context.fillText(`${newPlayer.bombs}`, 320, 40);
-        context.drawImage(enemy, 0, 0, 22, 36, 655, -2, 22 * 1.3, 36 * 1.3)
+        // Draw virus icon instead of enemy sprite
+        drawVirusEnemy(655, 5, 30, 30, frames);
         context.font = "26px silkscreenbold";
         if (newPlayer.enemiesKilled < 10) {
             context.fillText(`0${newPlayer.enemiesKilled}`, 608, 32);
@@ -117,12 +313,30 @@ window.onload = () => {
             window.cancelAnimationFrame(requestId);
             clear();
             for (let i = 0; i < mapMenu[0].length; i += 1) {
-                context.drawImage(solidBlock, 50 * i, 0, 50, 50)
+                drawCyberSolidBlock(50 * i, 0, 50, 50)
             }
             renderMap(mapMenu);
-            context.fillText(`GAME OVER!`, 280, canvas.height / 2 - 50);
-            context.fillText(`YOUR FINAL SCORE IS ${newPlayer.enemiesKilled}`, 155, canvas.height / 2);
-            context.fillText(`PRESS ENTER TO PLAY AGAIN`, 120, 350);
+            // Make game over text much larger and more visible
+            context.font = "48px silkscreenbold";
+            context.fillStyle = '#ff0088';
+            context.strokeStyle = '#ffffff';
+            context.lineWidth = 3;
+            context.strokeText(`GAME OVER!`, 200, canvas.height / 2 - 50);
+            context.fillText(`GAME OVER!`, 200, canvas.height / 2 - 50);
+            
+            context.font = "32px silkscreenbold";
+            context.fillStyle = '#00ffaa';
+            context.strokeStyle = '#000000';
+            context.lineWidth = 2;
+            context.strokeText(`YOUR FINAL SCORE IS ${newPlayer.enemiesKilled}`, 80, canvas.height / 2 + 30);
+            context.fillText(`YOUR FINAL SCORE IS ${newPlayer.enemiesKilled}`, 80, canvas.height / 2 + 30);
+            
+            context.font = "28px silkscreenbold";
+            context.fillStyle = '#00ffff';
+            context.strokeStyle = '#000000';
+            context.lineWidth = 2;
+            context.strokeText(`PRESS ENTER TO PLAY AGAIN`, 50, canvas.height / 2 + 100);
+            context.fillText(`PRESS ENTER TO PLAY AGAIN`, 50, canvas.height / 2 + 100);
         }, 500);
     }
 
@@ -452,7 +666,8 @@ window.onload = () => {
                     }
                     break;
             }
-            context.drawImage(enemy, 3, 3, 19, 30, this.x, this.y - 20 + offset, 30, 50);
+            // Draw virus enemy instead of sprite
+            drawVirusEnemy(this.x, this.y - 20 + offset, 30, 50, frames);
         }
     }
 

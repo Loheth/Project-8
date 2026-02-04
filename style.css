@@ -7,17 +7,54 @@
 body {
   font-family: "silkscreenbold";
   background: 
-    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-    url("./Assets/Sprites/super-bomberman-r-bg-black.jpg") no-repeat center;
-  background-color: black;
+    linear-gradient(rgba(0, 0, 0, 0.9), rgba(10, 10, 15, 0.9)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 170, 0.03) 2px,
+      rgba(0, 255, 170, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 170, 0.03) 2px,
+      rgba(0, 255, 170, 0.03) 4px
+    ),
+    radial-gradient(circle at 20% 50%, rgba(0, 255, 170, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(255, 0, 136, 0.1) 0%, transparent 50%),
+    #000000;
+  background-color: #000000;
   background-size: cover;
-  color: white;
+  color: #00ffaa;
   text-align: center;
   font-size: 40px;
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  position: relative;
+  overflow: hidden;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 170, 0.05) 2px,
+      rgba(0, 255, 170, 0.05) 4px
+    );
+  pointer-events: none;
+  opacity: 0.3;
 }
 
 canvas {
@@ -27,19 +64,26 @@ canvas {
 }
 
 h1 {
-  color: white;
+  color: #00ffaa;
   font-size: 4vh;
   padding: 2vh;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 170, 0.5),
+    0 0 20px rgba(0, 255, 170, 0.3),
+    0 0 30px rgba(0, 255, 170, 0.2);
 }
 
 h2 {
   font-size: 2vh;
   padding: 2vh;
+  color: #00ffaa;
+  text-shadow: 0 0 5px rgba(0, 255, 170, 0.5);
 }
 
 p {
   font-size: 1.5vh;
   padding: 1vh;
+  color: #00ffaa;
 }
 
 footer {
