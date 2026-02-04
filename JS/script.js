@@ -620,15 +620,26 @@ window.onload = () => {
             this.y += this.speedY;
             this.gridY = Math.floor((this.y + this.size / 2) / gridHeigth);
 
+            // Calculate sprite top position (sprite is drawn 20 pixels above player position)
+            const spriteTop = this.y - 20;
+            const spriteTopGridY = Math.floor(spriteTop / gridHeigth);
+            const spriteTopGridX = Math.floor((this.x + this.size / 2) / gridWidth);
+
+            // Check upward collision using sprite's top position
+            // If sprite's top is in a wall cell, prevent it from going further up
             if (
-                randMap[this.gridY - 1][this.gridX] !== 0 &&
-                randMap[this.gridY - 1][this.gridX] !== 4 &&
-                randMap[this.gridY - 1][this.gridX] !== 5 &&
-                randMap[this.gridY - 1][this.gridX] !== 6 &&
-                randMap[this.gridY - 1][this.gridX] !== 7 &&
-                this.y < this.gridY * gridHeigth
+                spriteTopGridY >= 0 &&
+                spriteTopGridY < randMap.length &&
+                spriteTopGridX >= 0 &&
+                spriteTopGridX < randMap[0].length &&
+                randMap[spriteTopGridY][spriteTopGridX] !== 0 &&
+                randMap[spriteTopGridY][spriteTopGridX] !== 4 &&
+                randMap[spriteTopGridY][spriteTopGridX] !== 5 &&
+                randMap[spriteTopGridY][spriteTopGridX] !== 6 &&
+                randMap[spriteTopGridY][spriteTopGridX] !== 7
             ) {
-                this.y = this.gridY * gridHeigth;
+                // Align sprite top to bottom of the wall cell
+                this.y = (spriteTopGridY + 1) * gridHeigth + 20;
             }
             if (
                 randMap[this.gridY + 1][this.gridX] !== 0 &&
