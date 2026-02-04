@@ -15,7 +15,10 @@ window.onload = () => {
         for (let i = 0; i < mapMenu[0].length; i += 1) {
             drawCyberSolidBlock(50 * i, 0, 50, 50)
         }
-        context.drawImage(superBomberman, (canvas.width - 500) / 2, canvas.height / 1.55 - 370, 500, 500)
+        // Draw at larger size to account for transparent padding in the image
+        const imageWidth = 600;
+        const imageHeight = 600;
+        context.drawImage(superBomberman, (canvas.width - imageWidth) / 2, canvas.height / 1.55 - 400, imageWidth, imageHeight)
         context.font = "26px silkscreenbold";
         context.fillStyle = '#00ffaa';
         context.fillText('Press enter', canvas.width / 2 - 105, canvas.height / 1.55);
