@@ -1,6 +1,13 @@
 window.onload = () => {
 
     let start = false;
+    let gameOverState = false;
+    let nameInputMode = false;
+    let leaderboardMode = false;
+    let playerName = '';
+    let finalScore = 0;
+    let nameError = '';
+    let cursorBlink = 0;
     context = canvas.getContext("2d");
 
     const menu = () => {
@@ -307,37 +314,260 @@ window.onload = () => {
         context.font = "26px silkscreenbold";
     }
 
+    const getScores = () => {
+        const storedScores = localStorage.getItem('gameScores');
+        if (storedScores) {
+            return JSON.parse(storedScores);
+        }
+        return [];
+    };
+
+    const saveScore = (name, score) => {
+        // Get existing scores from localStorage
+        let scores = getScores();
+        
+        // Check if name already exists (case-insensitive)
+        const nameExists = scores.some(entry => entry.name.toLowerCase() === name.toLowerCase());
+        if (nameExists) {
+            return false; // Name already exists
+        }
+        
+        // Add new score entry
+        scores.push({
+            name: name,
+            score: score,
+            date: new Date().toISOString()
+        });
+        
+        // Remove duplicates by name (case-insensitive) - keep the highest score for each name
+        const uniqueScores = [];
+        const seenNames = new Set();
+        scores.forEach(entry => {
+            const lowerName = entry.name.toLowerCase();
+            if (!seenNames.has(lowerName)) {
+                seenNames.add(lowerName);
+                uniqueScores.push(entry);
+            } else {
+                // If duplicate found, keep the one with higher score
+                const existingIndex = uniqueScores.findIndex(e => e.name.toLowerCase() === lowerName);
+                if (existingIndex !== -1 && entry.score > uniqueScores[existingIndex].score) {
+                    uniqueScores[existingIndex] = entry;
+                }
+            }
+        });
+        
+        // Sort by score (highest first)
+        uniqueScores.sort((a, b) => b.score - a.score);
+        
+        // Keep only top 5 scores
+        const top5Scores = uniqueScores.slice(0, 5);
+        
+        // Save back to localStorage
+        localStorage.setItem('gameScores', JSON.stringify(top5Scores));
+        return true; // Successfully saved
+    };
+
+    const drawNameInputScreen = () => {
+        clear();
+        for (let i = 0; i < mapMenu[0].length; i += 1) {
+            drawCyberSolidBlock(50 * i, 0, 50, 50)
+        }
+        renderMap(mapMenu);
+        
+        // Game Over text
+        context.font = "48px silkscreenbold";
+        context.fillStyle = '#ff0088';
+        context.strokeStyle = '#ffffff';
+        context.lineWidth = 3;
+        context.strokeText(`GAME OVER!`, 200, canvas.height / 2 - 150);
+        context.fillText(`GAME OVER!`, 200, canvas.height / 2 - 150);
+        
+        // Score display
+        context.font = "32px silkscreenbold";
+        context.fillStyle = '#00ffaa';
+        context.strokeStyle = '#000000';
+        context.lineWidth = 2;
+        context.strokeText(`YOUR FINAL SCORE: ${finalScore}`, 120, canvas.height / 2 - 80);
+        context.fillText(`YOUR FINAL SCORE: ${finalScore}`, 120, canvas.height / 2 - 80);
+        
+        // Name input prompt
+        context.font = "24px silkscreenbold";
+        context.fillStyle = '#00ffff';
+        context.strokeStyle = '#000000';
+        context.lineWidth = 2;
+        context.strokeText(`ENTER YOUR NAME:`, 150, canvas.height / 2 - 10);
+        context.fillText(`ENTER YOUR NAME:`, 150, canvas.height / 2 - 10);
+        
+        // Name input box background
+        const inputX = 150;
+        const inputY = canvas.height / 2 + 20;
+        const inputWidth = 450;
+        const inputHeight = 50;
+        
+        // Draw input box
+        const gradient = context.createLinearGradient(inputX, inputY, inputX + inputWidth, inputY + inputHeight);
+        gradient.addColorStop(0, '#0a0a0f');
+        gradient.addColorStop(0.5, '#1a1a2e');
+        gradient.addColorStop(1, '#0a0a0f');
+        context.fillStyle = gradient;
+        context.fillRect(inputX, inputY, inputWidth, inputHeight);
+        
+        // Border
+        context.strokeStyle = '#00ffaa';
+        context.lineWidth = 3;
+        context.strokeRect(inputX, inputY, inputWidth, inputHeight);
+        
+        // Player name text
+        context.font = "28px silkscreenbold";
+        context.fillStyle = '#00ffaa';
+        context.fillText(playerName, inputX + 10, inputY + 35);
+        
+        // Cursor blink effect
+        cursorBlink += 1;
+        if (cursorBlink > 30) cursorBlink = 0;
+        if (cursorBlink < 15) {
+            const textWidth = context.measureText(playerName).width;
+            context.fillStyle = '#00ffaa';
+            context.fillRect(inputX + 15 + textWidth, inputY + 15, 3, 25);
+        }
+        
+        // Error message
+        if (nameError) {
+            context.font = "20px silkscreenbold";
+            context.fillStyle = '#ff0088';
+            context.strokeStyle = '#000000';
+            context.lineWidth = 2;
+            context.strokeText(nameError, 150, inputY + 80);
+            context.fillText(nameError, 150, inputY + 80);
+        }
+        
+        // Instructions
+        context.font = "18px silkscreenbold";
+        context.fillStyle = '#00ffff';
+        context.strokeStyle = '#000000';
+        context.lineWidth = 1;
+        context.strokeText(`PRESS ENTER TO SAVE`, 200, inputY + 120);
+        context.fillText(`PRESS ENTER TO SAVE`, 200, inputY + 120);
+    };
+
+    const drawLeaderboard = () => {
+        clear();
+        for (let i = 0; i < mapMenu[0].length; i += 1) {
+            drawCyberSolidBlock(50 * i, 0, 50, 50)
+        }
+        renderMap(mapMenu);
+        
+        // Leaderboard title
+        context.font = "42px silkscreenbold";
+        context.fillStyle = '#00ffaa';
+        context.strokeStyle = '#000000';
+        context.lineWidth = 3;
+        context.strokeText(`LEADERBOARD`, 200, 80);
+        context.fillText(`LEADERBOARD`, 200, 80);
+        
+        // Get and display scores (already limited to top 5, but ensure no duplicates)
+        let scores = getScores();
+        
+        // Remove any duplicates (defensive check)
+        const seenNames = new Set();
+        const uniqueScores = scores.filter(entry => {
+            const lowerName = entry.name.toLowerCase();
+            if (!seenNames.has(lowerName)) {
+                seenNames.add(lowerName);
+                return true;
+            }
+            return false;
+        });
+        
+        // Sort by score (highest first) and limit to top 5
+        uniqueScores.sort((a, b) => b.score - a.score);
+        const topScores = uniqueScores.slice(0, 5);
+        
+        if (topScores.length === 0) {
+            context.font = "24px silkscreenbold";
+            context.fillStyle = '#00ffff';
+            context.strokeStyle = '#000000';
+            context.lineWidth = 2;
+            context.strokeText(`NO SCORES YET`, 250, canvas.height / 2);
+            context.fillText(`NO SCORES YET`, 250, canvas.height / 2);
+        } else {
+            // Header
+            context.font = "20px silkscreenbold";
+            context.fillStyle = '#00ffaa';
+            context.strokeStyle = '#000000';
+            context.lineWidth = 1;
+            context.strokeText(`RANK`, 100, 130);
+            context.fillText(`RANK`, 100, 130);
+            context.strokeText(`NAME`, 200, 130);
+            context.fillText(`NAME`, 200, 130);
+            context.strokeText(`SCORE`, 500, 130);
+            context.fillText(`SCORE`, 500, 130);
+            
+            // Score entries
+            topScores.forEach((entry, index) => {
+                const yPos = 160 + index * 35;
+                const rank = index + 1;
+                
+                // Highlight current player's score
+                if (entry.name === playerName && entry.score === finalScore) {
+                    context.fillStyle = 'rgba(0, 255, 170, 0.3)';
+                    context.fillRect(80, yPos - 25, 590, 30);
+                }
+                
+                // Rank
+                context.font = "18px silkscreenbold";
+                context.fillStyle = rank <= 3 ? '#ff0088' : '#00ffff';
+                context.strokeStyle = '#000000';
+                context.lineWidth = 1;
+                const rankText = rank < 10 ? `0${rank}` : `${rank}`;
+                context.strokeText(rankText, 100, yPos);
+                context.fillText(rankText, 100, yPos);
+                
+                // Name
+                context.fillStyle = entry.name === playerName && entry.score === finalScore ? '#00ffaa' : '#ffffff';
+                const displayName = entry.name.length > 20 ? entry.name.substring(0, 17) + '...' : entry.name;
+                context.strokeText(displayName, 200, yPos);
+                context.fillText(displayName, 200, yPos);
+                
+                // Score
+                context.fillStyle = entry.name === playerName && entry.score === finalScore ? '#00ffaa' : '#ffffff';
+                const scoreText = entry.score < 10 ? `0${entry.score}` : `${entry.score}`;
+                context.strokeText(scoreText, 500, yPos);
+                context.fillText(scoreText, 500, yPos);
+            });
+        }
+        
+        // Instructions
+        context.font = "22px silkscreenbold";
+        context.fillStyle = '#00ffff';
+        context.strokeStyle = '#000000';
+        context.lineWidth = 2;
+        context.strokeText(`PRESS ENTER TO PLAY AGAIN`, 120, canvas.height - 50);
+        context.fillText(`PRESS ENTER TO PLAY AGAIN`, 120, canvas.height - 50);
+    };
+
     const gameOver = (player) => {
         level1.pause()
         setTimeout(() => {
             window.cancelAnimationFrame(requestId);
-            clear();
-            for (let i = 0; i < mapMenu[0].length; i += 1) {
-                drawCyberSolidBlock(50 * i, 0, 50, 50)
-            }
-            renderMap(mapMenu);
-            // Make game over text much larger and more visible
-            context.font = "48px silkscreenbold";
-            context.fillStyle = '#ff0088';
-            context.strokeStyle = '#ffffff';
-            context.lineWidth = 3;
-            context.strokeText(`GAME OVER!`, 200, canvas.height / 2 - 50);
-            context.fillText(`GAME OVER!`, 200, canvas.height / 2 - 50);
-            
-            context.font = "32px silkscreenbold";
-            context.fillStyle = '#00ffaa';
-            context.strokeStyle = '#000000';
-            context.lineWidth = 2;
-            context.strokeText(`YOUR FINAL SCORE IS ${newPlayer.enemiesKilled}`, 80, canvas.height / 2 + 30);
-            context.fillText(`YOUR FINAL SCORE IS ${newPlayer.enemiesKilled}`, 80, canvas.height / 2 + 30);
-            
-            context.font = "28px silkscreenbold";
-            context.fillStyle = '#00ffff';
-            context.strokeStyle = '#000000';
-            context.lineWidth = 2;
-            context.strokeText(`PRESS ENTER TO PLAY AGAIN`, 50, canvas.height / 2 + 100);
-            context.fillText(`PRESS ENTER TO PLAY AGAIN`, 50, canvas.height / 2 + 100);
+            gameOverState = true;
+            nameInputMode = true;
+            leaderboardMode = false;
+            finalScore = newPlayer.enemiesKilled;
+            playerName = '';
+            nameError = '';
+            cursorBlink = 0;
+            gameOverLoop();
         }, 500);
+    }
+
+    const gameOverLoop = () => {
+        if (nameInputMode) {
+            drawNameInputScreen();
+        } else if (leaderboardMode) {
+            drawLeaderboard();
+        }
+        requestId = window.requestAnimationFrame(gameOverLoop);
     }
 
     class Player {
@@ -704,6 +934,53 @@ window.onload = () => {
     }
 
     document.onkeydown = function (e) {
+        // Handle game over states
+        if (gameOverState) {
+            if (nameInputMode) {
+                // Handle name input
+                if (e.keyCode === 13) { // Enter key
+                    const trimmedName = playerName.trim();
+                    if (trimmedName === '') {
+                        nameError = 'NAME CANNOT BE EMPTY!';
+                    } else {
+                        if (saveScore(trimmedName, finalScore)) {
+                            playerName = trimmedName;
+                            nameInputMode = false;
+                            leaderboardMode = true;
+                            nameError = '';
+                        } else {
+                            nameError = `NAME "${trimmedName}" ALREADY EXISTS!`;
+                        }
+                    }
+                } else if (e.keyCode === 8) { // Backspace
+                    playerName = playerName.slice(0, -1);
+                    nameError = '';
+                } else if (e.keyCode >= 65 && e.keyCode <= 90) { // A-Z
+                    if (playerName.length < 20) {
+                        playerName += String.fromCharCode(e.keyCode);
+                        nameError = '';
+                    }
+                } else if (e.keyCode >= 48 && e.keyCode <= 57) { // 0-9
+                    if (playerName.length < 20) {
+                        playerName += String.fromCharCode(e.keyCode);
+                        nameError = '';
+                    }
+                } else if (e.keyCode === 32) { // Space
+                    if (playerName.length < 20) {
+                        playerName += ' ';
+                        nameError = '';
+                    }
+                }
+            } else if (leaderboardMode) {
+                // Handle leaderboard
+                if (e.keyCode === 13) { // Enter key
+                    window.location.reload();
+                }
+            }
+            return;
+        }
+
+        // Handle normal game controls
         switch (e.keyCode) {
             case 32:
                 if (newPlayer.bombs > 0) {
@@ -747,10 +1024,6 @@ window.onload = () => {
             if (e.keyCode === 13) {
                 start = true;
                 startGame();
-            }
-        } else {
-            if (e.keyCode === 13) {
-                window.location.reload();
             }
         }
     }
