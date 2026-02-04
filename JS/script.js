@@ -604,6 +604,8 @@ window.onload = () => {
             this.direction = Math.floor(Math.random() * 4);
             this.countAnim = 0;
             this.enemiesKilled = 0;
+            this.lastSpeedX = 0;
+            this.lastSpeedY = 0;
 
         }
 
@@ -614,19 +616,37 @@ window.onload = () => {
         }
 
         newPos() {
+            // Detect direction change - if reversing direction, snap to grid center for smooth movement
+            const horizontalReversed = (this.lastSpeedX > 0 && this.speedX < 0) || 
+                                       (this.lastSpeedX < 0 && this.speedX > 0);
+            const verticalReversed = (this.lastSpeedY > 0 && this.speedY < 0) || 
+                                     (this.lastSpeedY < 0 && this.speedY > 0);
+            
+            if (horizontalReversed) {
+                // Snap to grid center horizontally when reversing direction for immediate response
+                const centerX = this.gridX * gridWidth + gridWidth / 2 - this.size / 2;
+                this.x = centerX;
+            }
+            if (verticalReversed) {
+                // Snap to grid center vertically when reversing direction for immediate response
+                const centerY = this.gridY * gridHeigth + gridHeigth / 2 - this.size / 2;
+                this.y = centerY;
+            }
+            
+            // Move player
             this.x += this.speedX;
-            this.gridX = Math.floor((this.x + this.size / 2) / gridWidth);
-
             this.y += this.speedY;
+            
+            // Update grid positions
+            this.gridX = Math.floor((this.x + this.size / 2) / gridWidth);
             this.gridY = Math.floor((this.y + this.size / 2) / gridHeigth);
-
+            
             // Calculate sprite top position (sprite is drawn 20 pixels above player position)
             const spriteTop = this.y - 20;
             const spriteTopGridY = Math.floor(spriteTop / gridHeigth);
             const spriteTopGridX = Math.floor((this.x + this.size / 2) / gridWidth);
 
             // Check upward collision using sprite's top position
-            // If sprite's top is in a wall cell, prevent it from going further up
             if (
                 spriteTopGridY >= 0 &&
                 spriteTopGridY < randMap.length &&
@@ -640,8 +660,26 @@ window.onload = () => {
             ) {
                 // Align sprite top to bottom of the wall cell
                 this.y = (spriteTopGridY + 1) * gridHeigth + 20;
+                this.gridY = Math.floor((this.y + this.size / 2) / gridHeigth);
             }
-            if (
+            
+            // Check downward collision - only block if moving down AND would enter a blocked cell
+            if (this.speedY > 0) {
+                const bottomGridY = Math.floor((this.y + this.size) / gridHeigth);
+                if (
+                    bottomGridY < randMap.length &&
+                    randMap[bottomGridY][this.gridX] !== undefined &&
+                    randMap[bottomGridY][this.gridX] !== 0 &&
+                    randMap[bottomGridY][this.gridX] !== 4 &&
+                    randMap[bottomGridY][this.gridX] !== 5 &&
+                    randMap[bottomGridY][this.gridX] !== 6 &&
+                    randMap[bottomGridY][this.gridX] !== 7
+                ) {
+                    this.y = bottomGridY * gridHeigth - this.size;
+                    this.gridY = Math.floor((this.y + this.size / 2) / gridHeigth);
+                }
+            } else if (
+                this.gridY + 1 < randMap.length &&
                 randMap[this.gridY + 1][this.gridX] !== 0 &&
                 randMap[this.gridY + 1][this.gridX] !== 4 &&
                 randMap[this.gridY + 1][this.gridX] !== 5 &&
@@ -649,9 +687,28 @@ window.onload = () => {
                 randMap[this.gridY + 1][this.gridX] !== 7 &&
                 this.y + this.size > (this.gridY + 1) * gridHeigth
             ) {
+                // Already past boundary, align back
                 this.y = this.gridY * gridHeigth + gridHeigth - this.size;
+                this.gridY = Math.floor((this.y + this.size / 2) / gridHeigth);
             }
-            if (
+            
+            // Check left collision - only block if moving left AND would enter a blocked cell
+            if (this.speedX < 0) {
+                const leftGridX = Math.floor(this.x / gridWidth);
+                if (
+                    leftGridX >= 0 &&
+                    randMap[this.gridY][leftGridX] !== undefined &&
+                    randMap[this.gridY][leftGridX] !== 0 &&
+                    randMap[this.gridY][leftGridX] !== 4 &&
+                    randMap[this.gridY][leftGridX] !== 5 &&
+                    randMap[this.gridY][leftGridX] !== 6 &&
+                    randMap[this.gridY][leftGridX] !== 7
+                ) {
+                    this.x = (leftGridX + 1) * gridWidth;
+                    this.gridX = Math.floor((this.x + this.size / 2) / gridWidth);
+                }
+            } else if (
+                this.gridX - 1 >= 0 &&
                 randMap[this.gridY][this.gridX - 1] !== 0 &&
                 randMap[this.gridY][this.gridX - 1] !== 4 &&
                 randMap[this.gridY][this.gridX - 1] !== 5 &&
@@ -659,9 +716,28 @@ window.onload = () => {
                 randMap[this.gridY][this.gridX - 1] !== 7 &&
                 this.x < this.gridX * gridWidth
             ) {
+                // Already past boundary, align back
                 this.x = this.gridX * gridWidth;
+                this.gridX = Math.floor((this.x + this.size / 2) / gridWidth);
             }
-            if (
+            
+            // Check right collision - only block if moving right AND would enter a blocked cell
+            if (this.speedX > 0) {
+                const rightGridX = Math.floor((this.x + this.size) / gridWidth);
+                if (
+                    rightGridX < randMap[0].length &&
+                    randMap[this.gridY][rightGridX] !== undefined &&
+                    randMap[this.gridY][rightGridX] !== 0 &&
+                    randMap[this.gridY][rightGridX] !== 4 &&
+                    randMap[this.gridY][rightGridX] !== 5 &&
+                    randMap[this.gridY][rightGridX] !== 6 &&
+                    randMap[this.gridY][rightGridX] !== 7
+                ) {
+                    this.x = rightGridX * gridWidth - this.size;
+                    this.gridX = Math.floor((this.x + this.size / 2) / gridWidth);
+                }
+            } else if (
+                this.gridX + 1 < randMap[0].length &&
                 randMap[this.gridY][this.gridX + 1] !== 0 &&
                 randMap[this.gridY][this.gridX + 1] !== 4 &&
                 randMap[this.gridY][this.gridX + 1] !== 5 &&
@@ -669,8 +745,14 @@ window.onload = () => {
                 randMap[this.gridY][this.gridX + 1] !== 7 &&
                 this.x + this.size > (this.gridX + 1) * gridWidth
             ) {
+                // Already past boundary, align back
                 this.x = this.gridX * gridWidth + gridWidth - this.size;
+                this.gridX = Math.floor((this.x + this.size / 2) / gridWidth);
             }
+            
+            // Store current speeds for next frame direction change detection
+            this.lastSpeedX = this.speedX;
+            this.lastSpeedY = this.speedY;
 
             if (randMap[this.gridY][this.gridX] === 5) {
                 this.bombPower += 1;
@@ -1012,12 +1094,14 @@ window.onload = () => {
                 break;
             case 37:
                 newPlayer.speedX = newPlayer.speed * -1;
+                newPlayer.speedY = 0;
                 newPlayer.left = true;
                 newPlayer.right = false;
                 newPlayer.up = false;
                 newPlayer.down = false;
                 break;
             case 38:
+                newPlayer.speedX = 0;
                 newPlayer.speedY = newPlayer.speed * -1;
                 newPlayer.left = false;
                 newPlayer.right = false;
@@ -1026,12 +1110,14 @@ window.onload = () => {
                 break;
             case 39:
                 newPlayer.speedX = newPlayer.speed;
+                newPlayer.speedY = 0;
                 newPlayer.left = false;
                 newPlayer.right = true;
                 newPlayer.up = false;
                 newPlayer.down = false;
                 break;
             case 40:
+                newPlayer.speedX = 0;
                 newPlayer.speedY = newPlayer.speed;
                 newPlayer.left = false;
                 newPlayer.right = false;
